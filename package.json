@@ -8,8 +8,9 @@
     "test": "node test/index.js",
     "bundle-zero": "browserify -s ZeroClientProvider -e zero.js > dist/ZeroClientProvider.js",
     "bundle-engine": "browserify -s ProviderEngine -e index.js > dist/ProviderEngine.js",
-    "transpile": "babel subproviders -d dist/subproviders",
-    "bundle": "mkdir -p ./dist && npm run bundle-engine && npm run bundle-zero && npm run transpile"
+    "transpile": "babel subproviders -d subproviders",
+    "transpile-index": "babel index.js -o index.js",
+    "bundle": "mkdir -p ./dist && npm run bundle-engine && npm run bundle-zero && npm run transpile && npm run transpile-index"
   },
   "author": "",
   "license": "ISC",
