@@ -1,4 +1,6 @@
-const stringify = require('json-stable-stringify')
+'use strict';
+
+var stringify = require('json-stable-stringify');
 
 module.exports = {
   cacheIdentifierForPayload: cacheIdentifierForPayload,
@@ -6,21 +8,24 @@ module.exports = {
   blockTagForPayload: blockTagForPayload,
   paramsWithoutBlockTag: paramsWithoutBlockTag,
   blockTagParamIndex: blockTagParamIndex,
-  cacheTypeForPayload: cacheTypeForPayload,
+  cacheTypeForPayload: cacheTypeForPayload
+};
+
+function cacheIdentifierForPayload(payload) {
+  var opts = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : {};
+
+  if (!canCache(payload)) return null;
+  var includeBlockRef = opts.includeBlockRef;
+
+  var params = includeBlockRef ? payload.params : paramsWithoutBlockTag(payload);
+  return payload.method + ':' + stringify(params);
 }
 
-function cacheIdentifierForPayload(payload, opts = {}){
-  if (!canCache(payload)) return null
-  const { includeBlockRef } = opts
-  const params = includeBlockRef ? payload.params : paramsWithoutBlockTag(payload)
-  return payload.method + ':' + stringify(params)
+function canCache(payload) {
+  return cacheTypeForPayload(payload) !== 'never';
 }
 
-function canCache(payload){
-  return cacheTypeForPayload(payload) !== 'never'
-}
-
-function blockTagForPayload(payload){
+function blockTagForPayload(payload) {
   var index = blockTagParamIndex(payload);
 
   // Block tag param not passed.
@@ -31,7 +36,7 @@ function blockTagForPayload(payload){
   return payload.params[index];
 }
 
-function paramsWithoutBlockTag(payload){
+function paramsWithoutBlockTag(payload) {
   var index = blockTagParamIndex(payload);
 
   // Block tag param not passed.
@@ -44,27 +49,27 @@ function paramsWithoutBlockTag(payload){
     return payload.params.slice(1);
   }
 
-  return payload.params.slice(0,index);
+  return payload.params.slice(0, index);
 }
 
-function blockTagParamIndex(payload){
-  switch(payload.method) {
+function blockTagParamIndex(payload) {
+  switch (payload.method) {
     // blockTag is third param
     case 'eth_getStorageAt':
-      return 2
+      return 2;
     // blockTag is second param
     case 'eth_getBalance':
     case 'eth_getCode':
     case 'eth_getTransactionCount':
     case 'eth_call':
     case 'eth_estimateGas':
-      return 1
+      return 1;
     // blockTag is first param
     case 'eth_getBlockByNumber':
-      return 0
+      return 0;
     // there is no blockTag
     default:
-      return undefined
+      return undefined;
   }
 }
 
@@ -87,7 +92,7 @@ function cacheTypeForPayload(payload) {
     case 'eth_compileSolidity':
     case 'eth_compileSerpent':
     case 'shh_version':
-      return 'perma'
+      return 'perma';
 
     // cache until fork
     case 'eth_getBlockByNumber':
@@ -95,7 +100,7 @@ function cacheTypeForPayload(payload) {
     case 'eth_getUncleCountByBlockNumber':
     case 'eth_getTransactionByBlockNumberAndIndex':
     case 'eth_getUncleByBlockNumberAndIndex':
-      return 'fork'
+      return 'fork';
 
     // cache for block
     case 'eth_gasPrice':
@@ -108,7 +113,7 @@ function cacheTypeForPayload(payload) {
     case 'eth_getFilterLogs':
     case 'eth_getLogs':
     case 'net_peerCount':
-      return 'block'
+      return 'block';
 
     // never cache
     case 'net_version':
@@ -143,6 +148,6 @@ function cacheTypeForPayload(payload) {
     case 'shh_uninstallFilter':
     case 'shh_getFilterChanges':
     case 'shh_getMessages':
-      return 'never'
+      return 'never';
   }
 }
